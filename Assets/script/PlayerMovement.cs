@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
 
-    
+    public bool isInSafeZone = false;
 
     public bool hasKey = false;
 

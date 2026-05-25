@@ -1,7 +1,12 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerAttack : MonoBehaviour
 {
+
+    private bool canAttack = true;
+
+    public GameObject slashPrefab;
     public Transform attackPoint;
 
     public float attackRange= 1f;
@@ -24,9 +29,11 @@ public class PlayerAttack : MonoBehaviour
 
 
 
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetKeyDown(KeyCode.Space) && canAttack)
         {
             Attack();
+
+            StartCoroutine(AttackCooldown());
         }
     }
 
@@ -40,9 +47,31 @@ public class PlayerAttack : MonoBehaviour
 
         Debug.Log(hitEnemis.Length);
 
+
+        GameObject slash = Instantiate(
+            slashPrefab,
+            attackPoint.position,
+            Quaternion.identity
+        );
+
+        Vector2 dir = playerMovement.lastMoveDirection;
+
+        float angle = Mathf.Atan2(dir.y,dir.x) * Mathf.Rad2Deg;
+
+        slash.transform.rotation = Quaternion.Euler(0,0, angle);
+
         foreach(Collider2D enemy in hitEnemis)
         {
-            enemy.GetComponent<Slime>().Die();
+            Vector2 hitDir = 
+            (enemy.transform.position - transform.position).normalized;
+
+            Enemy enemyScript = 
+            enemy.GetComponent<Enemy>();
+
+            if(enemyScript != null)
+            {
+                enemyScript.TakeHit(hitDir);
+            }
         }
     }
 
@@ -58,5 +87,14 @@ public class PlayerAttack : MonoBehaviour
             attackPoint.position,
             attackRange
         );
+    }
+
+    IEnumerator AttackCooldown()
+    {
+        canAttack = false;
+
+        yield return new WaitForSeconds(0.3f);
+
+        canAttack = true;
     }
 }
